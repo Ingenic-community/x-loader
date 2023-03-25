@@ -250,8 +250,8 @@ static void clk_tree_init(void) {
     cdiv = 1;
     l2div = CONFIG_L2CACHE_CLK_DIV;
     h0div = CONFIG_AHB_CLK_DIV;
-    h2div = h0div;
-    pdiv = h2div * 2;
+    h2div = CONFIG_AHB_CLK_DIV;
+    pdiv = CONFIG_PCLK_DIV;
 
     cpccr = (src_sel << 30) |
             (cpu_clk_sel << 28) |
@@ -342,13 +342,13 @@ void enable_uart_clk(void) {
 
     clkgr = cpm_inl(CPM_CLKGR);
 
-#if CONFIG_CONSOLE_INDEX == 0
+#if CONFIG_UART_INDEX == 0
     clkgr &= ~CPM_CLKGR_UART0;
 
-#elif CONFIG_CONSOLE_INDEX == 1
+#elif CONFIG_UART_INDEX == 1
     clkgr &= ~CPM_CLKGR_UART1;
 
-#elif CONFIG_CONSOLE_INDEX == 2
+#elif CONFIG_UART_INDEX == 2
     clkgr &= ~CPM_CLKGR_UART2;
 
 #else

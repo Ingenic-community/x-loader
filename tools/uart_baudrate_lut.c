@@ -17,11 +17,17 @@
  */
 
 #include <common.h>
-#include <string.h>
+
 
 #ifdef printf
 #undef printf
 #endif
+
+#ifdef memcmp
+#undef memcmp
+#endif
+
+#include <string.h>
 #include <stdio.h>
 
 static unsigned short quot1[3] = {0}; /* quot[0]:baud_div, quot[1]:umr, quot[2]:uacr */
@@ -136,7 +142,8 @@ static int uart_setting_baud(const void *key,const void *elt)
 
 int main(void) {
     struct baudtoregs_t *b;
-    unsigned int baudrate = CONFIG_CONSOLE_BAUDRATE;
+//    unsigned int baudrate = CONFIG_UART_BAUDRATE;
+    unsigned int baudrate = 115200;
 
     if(baudrate <= baudtoregs[ARRAY_SIZE(baudtoregs) - 1].baud)
         b = (struct baudtoregs_t *) bsearch((const void*)&baudrate, (const void*)baudtoregs,ARRAY_SIZE(baudtoregs),

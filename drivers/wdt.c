@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <generated/wdt_cfg_params.h>
 
 #define wdt_write(value, reg)   writel(value, WDT_BASE + reg)
 #define wdt_read(reg)           readl(WDT_BASE + reg)

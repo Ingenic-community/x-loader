@@ -29,7 +29,7 @@
 #define GSS_INPUT_PULL          3
 #define GSS_INPUT_NOPULL        4
 #define GSS_IGNORE              5
-#define GSS_TABLET_END          0x999
+#define GSS_TABLE_END          0x999
 
 enum gpio_function {
     GPIO_FUNC_0     = 0x00,  //0000, GPIO as function 0 / device 0

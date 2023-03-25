@@ -167,7 +167,7 @@ void sfc_set_gpio_pa_as_6bit(void) {
 #endif /* CONFIG_BOOT_SFC || CONFIG_BURN_SPI_FLASH */
 
 void console_set_gpio(void) {
-#if (CONFIG_CONSOLE_INDEX == 0)
+#if (CONFIG_UART_INDEX == 0)
 
 #ifdef CONFIG_CONSOLE_PC
     gpio_set_func(GPIO_PC(10), GPIO_FUNC_0);
@@ -176,9 +176,9 @@ void console_set_gpio(void) {
 #error Unknown console 0 I/O port!
 #endif
 
-#endif /* CONFIG_CONSOLE_INDEX == 0 */
+#endif /* CONFIG_UART_INDEX == 0 */
 
-#if (CONFIG_CONSOLE_INDEX == 1)
+#if (CONFIG_UART_INDEX == 1)
 
 #if (defined CONFIG_CONSOLE_PA)
     gpio_set_func(GPIO_PA(4), GPIO_FUNC_2);
@@ -191,9 +191,9 @@ void console_set_gpio(void) {
 #error Unknown console 1 I/O port!
 #endif
 
-#endif /* CONFIG_CONSOLE_INDEX == 1 */
+#endif /* CONFIG_UART_INDEX == 1 */
 
-#if (CONFIG_CONSOLE_INDEX == 2)
+#if (CONFIG_UART_INDEX == 2)
 
 #if (defined CONFIG_CONSOLE_PD)
     gpio_set_func(GPIO_PD(4), GPIO_FUNC_0);
@@ -211,5 +211,5 @@ void console_set_gpio(void) {
 #error Unknown console 2 I/O port!
 #endif
 
-#endif /* CONFIG_CONSOLE_INDEX == 2 */
+#endif /* CONFIG_UART_INDEX == 2 */
 }

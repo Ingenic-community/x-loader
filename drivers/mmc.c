@@ -20,6 +20,8 @@
 
 //#define CONFIG_MSC_DEBUG
 
+#ifdef CONFIG_BOOT_MMC
+
 #ifndef CONFIG_MMC_MAX_BLK_COUNT
 #define CONFIG_MMC_MAX_BLK_COUNT 65535
 #endif
@@ -1322,3 +1324,5 @@ int mmc_read(uint32_t offset, uint32_t length, uint32_t dest) {
 
     return 0;
 }
+
+#endif

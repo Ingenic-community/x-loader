@@ -18,9 +18,9 @@
 
 #ifndef LPDDR_CHIP_H
 #define LPDDR_CHIP_H
-
-#ifdef CONFIG_MDDR_H5MS5122DFR_J3M
-#include "./chip/MDDR_H5MS5122DFR_J3M.h"
-#endif
+//
+//#ifdef CONFIG_MDDR_H5MS5122DFR_J3M
+//#include "./chip/MDDR_H5MS5122DFR_J3M.h"
+//#endif
 
 #endif /* LPDDR_CHIP_H */

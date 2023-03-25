@@ -26,12 +26,13 @@
 #define EFUSE_DATA0	    0xb354000C
 
 enum socid {
-    X1000 = 0xff00,
-    X1000E = 0xff01,
-    X1500 = 0xff02,
-    X1000_NEW = 0xff08,
-    X1000E_NEW = 0xff09,
-    X1500_NEW = 0xff0a,
+	X1000 = 0xff00,
+	X1000E = 0xff01,
+	X1500 = 0xff02,
+	X1501 = 0xff05,
+	X1000_NEW = 0xff08,
+	X1000E_NEW = 0xff09,
+	X1500_NEW = 0xff0a,
 };
 
 #ifdef CONFIG_CHECK_SOC_ID
@@ -50,39 +51,61 @@ int ddr_autosr = 1;
 
 void check_socid(void)
 {
-    unsigned int socid, waferid;
-    unsigned int data1, data3;
+	unsigned int socid, waferid;
+	unsigned int data1, data3;
 
-    efuse_read(&socid, 0x3c + EFU_ROM_BASE, sizeof(socid));
-    socid &= 0xffff;
+	efuse_read(&socid, 0x3c + EFU_ROM_BASE, sizeof(socid));
+	socid &= 0xffff;
 
-    switch(socid) {
-    case X1000E:
-    case X1000_NEW:
-    case X1000E_NEW:
-    case X1500_NEW:
-        goto check_finished;
-    case X1500: {
-        efuse_read(&data1, 0x04 + EFU_ROM_BASE, sizeof(data1));
-        efuse_read(&data3, 0x0c + EFU_ROM_BASE, sizeof(data3));
+	printf("SoC ID: %x - ", socid);
 
-        if ((data1 & LOTID_LOW_MASK) == LOTID_LOW && \
-            (data3 & LOTID_HIGH_MASK) == LOTID_HIGH) {
-            waferid = (data1 >> WAFERID_BIT_SHIFT) & WAFERID_MASK;
-            if (waferid >= 0x10 && waferid <= 0x19) {
-                goto check_finished;
-            }
-        }
-    }
-    case X1000:
-    case 0:
-    default:
-        ddr_autosr = 0;
-    }
+	switch (socid) {
+		case X1000E:
+		case X1000E_NEW:
+			puts("X1000E");
+			break;
+		case X1000:
+		case X1000_NEW:
+			puts("X1000");
+			break;
+		case X1500:
+		case X1500_NEW:
+			puts("X1500");
+			break;
+		case X1501:
+			puts("X1501");
+			break;
+		default:
+			puts("?");
+			break;
+	}
 
-    return;
+	switch (socid) {
+		case X1000E:
+		case X1000_NEW:
+		case X1000E_NEW:
+		case X1500_NEW:
+		case X1501:
+			goto check_finished;
+		case X1500: {
+			efuse_read(&data1, 0x04 + EFU_ROM_BASE, sizeof(data1));
+			efuse_read(&data3, 0x0c + EFU_ROM_BASE, sizeof(data3));
+
+			if ((data1 & LOTID_LOW_MASK) == LOTID_LOW && (data3 & LOTID_HIGH_MASK) == LOTID_HIGH) {
+				waferid = (data1 >> WAFERID_BIT_SHIFT) & WAFERID_MASK;
+				if (waferid >= 0x10 && waferid <= 0x19) {
+					goto check_finished;
+				}
+			}
+		}
+		case X1000:
+		case 0:
+		default:
+			ddr_autosr = 0;
+	}
+
+	return;
 
 check_finished:
-    ddr_autosr = 1;
-    uart_puts("\nR");
+	ddr_autosr = 1;
 }

@@ -62,7 +62,8 @@ struct aes_data {
 };
 
 void aes_init(void);
+void aes_test(void);
 void aes_load_key(struct aes_key*);
 void aes_decrypt(struct aes_data*);
 
-#endif /* AES_KEY */
+#endif /* AES_H */

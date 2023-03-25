@@ -138,8 +138,9 @@ void mdelay(uint32_t msec) {
 
 __attribute__((noreturn)) void hang() {
     uart_puts("\n### Hang-up - Please reset board ###\n");
-    while (1)
-        ;
+    while (1) {
+	    asm volatile("wait");
+    }
 }
 
 __attribute__((noreturn)) void hang_reason(const char* reason) {
@@ -177,6 +178,14 @@ int memcmp(const void * cs,const void * ct, size_t count) {
     return res;
 }
 
+void *memset(void *s, int c, size_t n) {
+	for (size_t i=0; i<n; i++) {
+		((uint8_t *)s)[i] = c;
+	}
+
+	return s;
+}
+
 size_t strlen(const char * s) {
     const char *sc;
 
@@ -191,7 +200,7 @@ char * strstr(const char * s1,const char * s2) {
     l2 = strlen(s2);
     if (!l2)
         return (char *) s1;
-        l1 = strlen(s1);
+    l1 = strlen(s1);
     while (l1 >= l2) {
         l1--;
         if (!memcmp(s1,s2,l2))
@@ -306,7 +315,7 @@ void flush_cache_all(void) {
     flush_icache_all();
 }
 
-void jump_to_usbboot(void) {
+void check_jump_to_usb_boot(void) {
     uint32_t reg;
 
     reg = cpm_inl(CPM_SLPC);
@@ -322,7 +331,7 @@ void jump_to_usbboot(void) {
     }
 }
 
-void set_jump_to_usbboot(void) {
+void set_jump_to_usb_boot(void) {
     cpm_outl(burn_magic, CPM_SLPC);
 
     wdt_restart();
@@ -350,19 +359,19 @@ void pass_params_to_uboot(void) {
     /*
      * Uart index and baudrate
      */
-    writel(CONFIG_CONSOLE_INDEX, CONFIG_UART_INDEX_ADDR);
-    writel(CONFIG_CONSOLE_BAUDRATE, CONFIG_UART_BAUDRATE_ADDR);
+    writel(CONFIG_UART_INDEX, CONFIG_UART_INDEX_ADDR);
+    writel(CONFIG_UART_BAUDRATE, CONFIG_UART_BAUDRATE_ADDR);
 }
 
 __attribute__((weak)) const int gpio_ss_table[2][2] = {
-        {GSS_TABLET_END, GSS_TABLET_END},
+        {GSS_TABLE_END, GSS_TABLE_END},
 };
 
 inline static void board_gpio_suspend(void) {
     int pin = 0;
     int state = 0;
 
-    for (int i = 0; gpio_ss_table[i][1] != GSS_TABLET_END; i++) {
+    for (int i = 0; gpio_ss_table[i][1] != GSS_TABLE_END; i++) {
         pin = gpio_ss_table[i][0];
         state = gpio_ss_table[i][1];
 

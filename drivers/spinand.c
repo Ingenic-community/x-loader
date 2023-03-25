@@ -18,6 +18,8 @@
 
 #include <common.h>
 
+#if 0
+
 static uint8_t gd5fxfq4xc_series;
 static uint8_t gd5fxgq4xbxig_series;
 static uint8_t addr_len;
@@ -288,3 +290,5 @@ int is_recovery_update_failed(void) {
 
     return 0;
 }
+
+#endif

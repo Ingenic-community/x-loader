@@ -17,12 +17,59 @@
  */
 
 #include <common.h>
-#include <generated/efuse_reg_values.h>
 
 #define EFUSE_CTRL		0x0
 #define EFUSE_CFG		0x4
 #define EFUSE_STATE		0x8
 #define EFUSE_DATA(n)   (0xC + (n)*4)
+
+struct efuse_cfg {
+	uint32_t rd_adj;
+	uint32_t wr_adj;
+	uint32_t rd_strobe;
+	uint32_t wr_strobe;
+};
+
+static void efuse_adjust_cfg(struct efuse_cfg *cfg) {
+	int i;
+	uint32_t val, ns;
+	uint32_t h2clk;
+	uint32_t pll_rate = CONFIG_DDR_SEL_PLL == APLL ? CONFIG_APLL_FREQ : CONFIG_MPLL_FREQ;
+
+	h2clk = pll_rate / CONFIG_AHB_CLK_DIV * 1000000;
+	ns = 1000000000 / h2clk;
+
+	for(i = 0; i < 0x4; i++)
+		if(((i + 1) * ns) > 2)
+			break;
+
+	//assert((i < 0x4));
+	cfg->rd_adj = cfg->wr_adj = i;
+
+	for(i = 0; i < 0x8; i++)
+		if(((cfg->rd_adj + i + 3) * ns) > 15)
+			break;
+
+	//assert((i < 0x8));
+	cfg->rd_strobe = i;
+
+	/*
+	 * X-loader efuse driver not support to write efuse,
+	 * so, don't need to calculate wr_adj and wr_strobe.
+	 */
+#if 0
+	cfg->wr_adj = cfg->rd_adj;
+
+    for(i = 0; i < 0x1f; i += 100) {
+        val = (cfg->wr_adj + i + 916) * ns;
+        if( val > 4 * 1000 && val < 6 *1000)
+            break;
+    }
+
+    assert((i < 0x1f));
+    cfg->wr_strobe = i;
+#endif
+}
 
 static int check_vaild(uint32_t addr, int length)
 {
@@ -59,8 +106,12 @@ int efuse_read(void *buf, uint32_t addr, int length) {
     addr -= EFU_ROM_BASE;
     word_num = (length + 3) / 4;
 
+    struct efuse_cfg efuse_cfg;
+
+    efuse_adjust_cfg(&efuse_cfg);
+
     /* set efuse configure resister */
-    val = EFUCFG_RD_ADJ << 20 | EFUCFG_RD_STROBE << 16;
+    val = efuse_cfg.rd_adj << 20 | efuse_cfg.rd_strobe << 16;
     efuse_writel(val, EFUSE_CFG);
 
     /* clear read done status */

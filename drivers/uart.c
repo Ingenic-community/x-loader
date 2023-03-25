@@ -20,12 +20,11 @@
  */
 
 #include <common.h>
-#include <generated/uart_baudrate_reg_values.h>
 
 struct jz_uart *uart;
 
 #ifdef CONFIG_CONSOLE_ENABLE
-static void uart_putc(const char c) {
+static inline void uart_putc(const char c) {
     if (c == '\n')
         uart_putc('\r');
 
@@ -39,7 +38,7 @@ static void uart_putc(const char c) {
 void uart_init(void) {
     uint8_t tmp;
 
-    uart = (struct jz_uart *)(UART0_BASE + CONFIG_CONSOLE_INDEX * 0x1000);
+    uart = (struct jz_uart *)(UART0_BASE + CONFIG_UART_INDEX * 0x1000);
 
     /* init uart gpio */
     console_set_gpio();
@@ -67,10 +66,10 @@ void uart_init(void) {
     tmp |= UART_LCR_DLAB;
     writeb(tmp, &uart->lcr);
 
-    writeb((UART_BAUDRATE_DIV_BEST >> 8) & 0xff, &uart->dlhr_ier);
-    writeb(UART_BAUDRATE_DIV_BEST & 0xff, &uart->rbr_thr_dllr);
-    writeb(UART_UMR_BEST, &uart->umr);
-    writeb(UART_UACR_BEST, &uart->uacr);
+    writeb((CONFIG_UART_REG_DIV >> 8) & 0xff, &uart->dlhr_ier);
+    writeb(CONFIG_UART_REG_DIV & 0xff, &uart->rbr_thr_dllr);
+    writeb(CONFIG_UART_REG_UMR, &uart->umr);
+    writeb(CONFIG_UART_REG_UACR, &uart->uacr);
 
     tmp &= ~UART_LCR_DLAB;
     writeb(tmp, &uart->lcr);

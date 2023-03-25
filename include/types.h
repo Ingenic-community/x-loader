@@ -19,7 +19,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
 
 #undef NULL
 #if defined(__cplusplus)
@@ -27,6 +27,10 @@
 #else
 #define NULL ((void *)0)
 #endif
+
+#define bool	_Bool
+#define true	1
+#define false	0
 
 typedef __signed__ char __s8;
 typedef unsigned char __u8;
@@ -83,5 +87,7 @@ typedef unsigned int        size_t;
 typedef unsigned long int uintptr_t;
 typedef     ulong       lbaint_t;
 #endif
+
+#define CHAR_BIT	8
 
 #endif

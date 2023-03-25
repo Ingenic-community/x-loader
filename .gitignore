@@ -1,7 +1,9 @@
 !.gitignore
 .cproject
 .project
-out/*
+cmake-build*
+tools/cmake-build*
+boards/sudomaker-internal*
 *.o
 *.i
 a.out
@@ -11,20 +13,9 @@ a.out
 *.map
 *.bin
 *.elf
-*.map
 *.temp
 *.dump
-include/generated
-tools/sfc_boot_checksum
-tools/ddr_params_creator
-tools/uart_baudrate_lut
-tools/mbr_creator
-tools/spl_params_fixer
-tools/efuse_params_creator
-tools/sfc_timing_params_creator
-tools/wdt_params_creator
 
-#
 # ignore tags files
 tags
 TAGS
