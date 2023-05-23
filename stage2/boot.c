@@ -138,73 +138,52 @@ struct uimage_header {
 	uint8_t		ih_name[32];	/* Image Name			*/
 };
 
-void xloader_stage2_boot() {
-	struct uimage_header *uimage_hdr = malloc(sizeof(struct uimage_header));
+void *memcpy_from_back(void *dest, const void *src, size_t n) {
+	char *d = dest;
+	const char *s = src;
 
-	xloader_storage_load(CONFIG_KERNEL_OFFSET, sizeof(struct uimage_header), uimage_hdr);
+	// Start from the end of the array and copy one byte at a time
+	for (size_t i = n; i > 0; i--) {
+		d[i-1] = s[i-1];
+	}
 
-	uimage_hdr->ih_size = __builtin_bswap32(uimage_hdr->ih_size);
-	uimage_hdr->ih_load = __builtin_bswap32(uimage_hdr->ih_load);
-	uimage_hdr->ih_ep = __builtin_bswap32(uimage_hdr->ih_ep);
-
-	printf("uImage name: %s\n", uimage_hdr->ih_name);
-	printf("uImage size: %d\n", uimage_hdr->ih_size);
-	printf("uImage load addr: %x\n", uimage_hdr->ih_load);
-	printf("uImage endpoint addr: %x\n", uimage_hdr->ih_ep);
-
-	xloader_stage2_lzma_decompress(CONFIG_KERNEL_OFFSET + sizeof(struct uimage_header),
-				       (void *) uimage_hdr->ih_load, uimage_hdr->ih_size);
-
-	typedef void (*image_entry_t)(int, char **, void *, int *)
-		__attribute__ ((noreturn));
-
-	uint32_t *linux_argv = (uint32_t *) KERNEL_PARAMETER_ADDR;
-
-	image_entry_t image_entry = (image_entry_t) uimage_hdr->ih_ep;
-
-	linux_argv[0] = 0;
-	linux_argv[1] = 0;
-
-	flush_cache_all();
-
-	printf("Jumping to %p\n", image_entry);
-
-	image_entry(0, (char **)linux_argv, NULL, 0);
-
-	hang();
+	return dest;
 }
 
 void xloader_stage2_boot_uimage(uint32_t from_storage_offset, uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3) {
 	int rc = 0;
-	struct uimage_header *uimage_hdr = malloc(sizeof(struct uimage_header));
+	struct uimage_header uimage_hdr;
 
-	xloader_storage_load(from_storage_offset, sizeof(struct uimage_header), uimage_hdr);
+	xloader_storage_load(from_storage_offset, sizeof(struct uimage_header), &uimage_hdr);
 
-	if (uimage_hdr->ih_magic != 0x56190527) {
+	if (uimage_hdr.ih_magic != 0x56190527) {
 		puts("uImage magic incorrect");
 		return;
 	}
 
 	// We're little endian, aren't we?
-	uimage_hdr->ih_size = __builtin_bswap32(uimage_hdr->ih_size);
-	uimage_hdr->ih_load = __builtin_bswap32(uimage_hdr->ih_load);
-	uimage_hdr->ih_ep = __builtin_bswap32(uimage_hdr->ih_ep);
+	uimage_hdr.ih_size = __builtin_bswap32(uimage_hdr.ih_size);
+	uimage_hdr.ih_load = __builtin_bswap32(uimage_hdr.ih_load);
+	uimage_hdr.ih_ep = __builtin_bswap32(uimage_hdr.ih_ep);
 
-	printf("uImage name: %s\n", uimage_hdr->ih_name);
-	printf("uImage size: %d\n", uimage_hdr->ih_size);
-	printf("uImage load addr: %x\n", uimage_hdr->ih_load);
-	printf("uImage endpoint addr: %x\n", uimage_hdr->ih_ep);
+	printf("uImage name: %s\n", uimage_hdr.ih_name);
+	printf("uImage size: %d\n", uimage_hdr.ih_size);
+	printf("uImage load addr: %x\n", uimage_hdr.ih_load);
+	printf("uImage endpoint addr: %x\n", uimage_hdr.ih_ep);
 
-	switch (uimage_hdr->ih_comp) {
+	const void *bounce = (const void *)(DRAM_BASE + 0x20000);
+
+	switch (uimage_hdr.ih_comp) {
 		case 0:
-			rc = xloader_storage_load(from_storage_offset + sizeof(struct uimage_header), uimage_hdr->ih_size, (void *) uimage_hdr->ih_load);
+			rc = xloader_storage_load(from_storage_offset + sizeof(struct uimage_header), uimage_hdr.ih_size, (void *) uimage_hdr.ih_load);
 			break;
 		case 3:
 			rc = xloader_stage2_lzma_decompress(from_storage_offset + sizeof(struct uimage_header),
-							    (void *) uimage_hdr->ih_load, uimage_hdr->ih_size);
+							    (void *)bounce, uimage_hdr.ih_size);
+			memcpy_from_back((void *)uimage_hdr.ih_load, bounce, 0x400000);
 			break;
 		default:
-			printf("uImage compression unsupported: %u\n", uimage_hdr->ih_comp);
+			printf("uImage compression unsupported: %u\n", uimage_hdr.ih_comp);
 			return;
 	}
 
@@ -214,7 +193,7 @@ void xloader_stage2_boot_uimage(uint32_t from_storage_offset, uint32_t arg0, uin
 	typedef void (*image_entry_t)(uint32_t, uint32_t, uint32_t, uint32_t)
 		__attribute__ ((noreturn));
 
-	image_entry_t image_entry = (image_entry_t) uimage_hdr->ih_ep;
+	image_entry_t image_entry = (image_entry_t) uimage_hdr.ih_ep;
 
 	flush_cache_all();
 

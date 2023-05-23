@@ -17,11 +17,17 @@
 
 #include "lib/lwmem/lwmem.h"
 
+//static const lwmem_region_t lwmem_regions[3] = {
+//	// DRAM: 128KB - 1MB
+//	{ (void *)(DRAM_BASE + 0x20000), 0xE0000 },
+//	// DRAM: 6MB to infinity
+//	{ (void *)(DRAM_BASE + 0x500000), 77108864 },
+//	{ NULL, 0 }
+//};
+
 static const lwmem_region_t lwmem_regions[3] = {
-	// DRAM: 128KB - 1MB
-	{ (void *)(DRAM_BASE + 0x20000), 0xE0000 },
-	// DRAM: 6MB to infinity
-	{ (void *)(DRAM_BASE + 0x500000), 77108864 },
+	// DRAM: 4.125MB to infinity
+	{ (void *)(DRAM_BASE + 0x420000), 77108864 },
 	{ NULL, 0 }
 };
 
